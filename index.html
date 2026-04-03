@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>母婴用品行业数据分析报告</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0a0e17;
+            --bg-card: #131a2b;
+            --bg-card-hover: #1a2338;
+            --text-primary: #e8eaed;
+            --text-secondary: #9aa0a6;
+            --accent-cyan: #00d4ff;
+            --accent-purple: #a855f7;
+            --accent-pink: #ff3cac;
+            --accent-green: #00ffa3;
+            --gradient-1: linear-gradient(135deg, #00d4ff 0%, #a855f7 100%);
+            --gradient-2: linear-gradient(135deg, #ff3cac 0%, #a855f7 100%);
+            --glow-cyan: 0 0 20px rgba(0, 212, 255, 0.4);
+            --glow-purple: 0 0 20px rgba(168, 85, 247, 0.4);
+        }
+        html { background: var(--bg-dark); }
+        body {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px;
+            font-family: 'PingFang SC', 'Microsoft YaHei', -apple-system, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+        h1 {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -1px;
+        }
+        h2 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-top: 48px;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        h2::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: var(--gradient-1);
+            border-radius: 2px;
+        }
+        h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-top: 24px;
+            margin-bottom: 16px;
+            color: var(--accent-cyan);
+        }
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .summary {
+            background: linear-gradient(135deg, rgba(0,212,255,0.1) 0%, rgba(168,85,247,0.1) 100%);
+            padding: 28px;
+            border-radius: 16px;
+            margin-bottom: 40px;
+            border: 1px solid rgba(0,212,255,0.2);
+            backdrop-filter: blur(10px);
+        }
+        .summary h3 {
+            margin-top: 0;
+            color: var(--accent-cyan);
+            font-size: 16px;
+        }
+        .summary p {
+            margin: 12px 0;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        .summary strong {
+            color: var(--text-primary);
+        }
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin: 32px 0;
+        }
+        .kpi-card {
+            background: var(--bg-card);
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-1);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .kpi-card:hover {
+            background: var(--bg-card-hover);
+            transform: translateY(-4px);
+            box-shadow: var(--glow-cyan);
+        }
+        .kpi-card:hover::before {
+            opacity: 1;
+        }
+        .kpi-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+        .kpi-value {
+            font-size: 32px;
+            font-weight: 700;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .kpi-change {
+            font-size: 13px;
+            margin-top: 8px;
+            color: var(--accent-green);
+        }
+        .kpi-change.negative { color: var(--accent-pink); }
+        .chart-container {
+            background: var(--bg-card);
+            padding: 24px;
+            margin: 24px 0;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .chart {
+            width: 100%;
+            height: 350px;
+        }
+        .insight-box {
+            background: linear-gradient(135deg, rgba(255,60,172,0.1) 0%, rgba(168,85,247,0.1) 100%);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 12px;
+            border-left: 3px solid var(--accent-pink);
+        }
+        .insight-box h4 {
+            margin: 0 0 8px 0;
+            color: var(--accent-pink);
+            font-size: 14px;
+        }
+        .insight-box p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        th, td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        th {
+            background: rgba(0,212,255,0.1);
+            color: var(--accent-cyan);
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        th:first-child { border-radius: 8px 0 0 0; }
+        th:last-child { border-radius: 0 8px 0 0; }
+        tr:hover { background: rgba(255,255,255,0.03); }
+        .tag {
+            display: inline-block;
+            padding: 3px 10px;
+            font-size: 11px;
+            border-radius: 20px;
+            margin-right: 4px;
+        }
+        .tag-green { background: rgba(0,255,163,0.15); color: var(--accent-green); }
+        .tag-red { background: rgba(255,60,172,0.15); color: var(--accent-pink); }
+        .tag-blue { background: rgba(0,212,255,0.15); color: var(--accent-cyan); }
+        .recommendations {
+            background: linear-gradient(135deg, rgba(0,212,255,0.08) 0%, rgba(168,85,247,0.08) 100%);
+            padding: 28px;
+            margin-top: 40px;
+            border-radius: 16px;
+            border: 1px solid rgba(168,85,247,0.2);
+        }
+        .recommendations h3 {
+            margin-top: 0;
+            color: var(--accent-purple);
+        }
+        .recommendations ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .recommendations li {
+            margin: 12px 0;
+            color: var(--text-secondary);
+        }
+        .recommendations li::marker {
+            color: var(--accent-cyan);
+        }
+        .recommendations strong {
+            color: var(--text-primary);
+        }
+        footer {
+            margin-top: 56px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+        .tech-decoration {
+            position: fixed;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0,212,255,0.08) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        .tech-1 { top: -100px; right: -100px; }
+        .tech-2 { bottom: -100px; left: -100px; }
+    </style>
+</head>
+<body>
+    <div class="tech-decoration tech-1"></div>
+    <div class="tech-decoration tech-2"></div>
+
+    <h1>母婴用品行业数据分析报告</h1>
+    <p class="subtitle">数据来源：天猫电商平台 | 时间范围：2020年1月 - 2022年2月</p>
+
+    <div class="summary">
+        <h3>核心结论</h3>
+        <p><strong>行业处于高速增长期</strong>：妈妈产前产后用品2021年同比增长31%，显著高于孕妇装行业的11.5%。</p>
+        <p><strong>护腰枕市场呈现寡头格局</strong>：CR4达42%，tomi baby/多米贝贝以14.1%份额位居第一。</p>
+        <p><strong>消费者偏好明确</strong>：50元以下产品销量最高，可拆洗功能成必选项（96%），天蓝色最受欢迎。</p>
+    </div>
+
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-label">妈妈产前产后用品年搜索量</div>
+            <div class="kpi-value">3,368万</div>
+            <div class="kpi-change">↑ 31% 同比增长</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">孕妇装年搜索量</div>
+            <div class="kpi-value">1,673万</div>
+            <div class="kpi-change">↑ 11.5% 同比增长</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">护腰枕品牌数量</div>
+            <div class="kpi-value">62个</div>
+            <div class="kpi-change">CR4 = 42.1%</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">品类热度比</div>
+            <div class="kpi-value">5.3x</div>
+            <div class="kpi-change">孕妇装/妈妈用品</div>
+        </div>
+    </div>
+
+    <h2>市场趋势分析</h2>
+
+    <div class="chart-container">
+        <h3>行业搜索热度趋势（2020-2021）</h3>
+        <div id="trendChart" class="chart"></div>
+    </div>
+
+    <div class="insight-box">
+        <h4>关键发现</h4>
+        <p>2020年2月受疫情影响搜索量跌至谷底，之后呈现持续上升趋势。两个行业销售高峰期均在下半年，孕妇装10月达峰值，妈妈产前产后用品6月和8月较高。</p>
+    </div>
+
+    <h3>品类热度对比</h3>
+    <table>
+        <tr>
+            <th>品类</th>
+            <th>年搜索量</th>
+            <th>同比增长</th>
+            <th>支付转化指数</th>
+            <th>趋势</th>
+        </tr>
+        <tr>
+            <td>孕妇装/孕产妇用品/营养</td>
+            <td>1,673万</td>
+            <td><span class="tag tag-green">+11.5%</span></td>
+            <td>11,078</td>
+            <td>成熟稳定</td>
+        </tr>
+        <tr>
+            <td>妈妈产前产后用品</td>
+            <td>337万</td>
+            <td><span class="tag tag-green">+31%</span></td>
+            <td>2,829</td>
+            <td><span class="tag tag-red">高速增长</span></td>
+        </tr>
+    </table>
+
+    <h2>品牌竞争格局</h2>
+
+    <div class="chart-container">
+        <h3>护腰枕品牌市场份额（Top 10）</h3>
+        <div id="brandChart" class="chart"></div>
+    </div>
+
+    <div class="insight-box">
+        <h4>竞争格局洞察</h4>
+        <p>护腰枕市场呈现<strong>寡头竞争</strong>格局，CR4达42.12%，CR10达66.37%。品牌搜索热度差距悬殊，最大差距达1228倍，腰部及尾部品牌生存空间有限。</p>
+    </div>
+
+    <table>
+        <tr>
+            <th>排名</th>
+            <th>品牌</th>
+            <th>搜索人气</th>
+            <th>支付转化指数</th>
+            <th>市场份额</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>tomi baby/多米贝贝</td>
+            <td>10,073</td>
+            <td>5,340,394</td>
+            <td>14.1%</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>咕呗</td>
+            <td>8,858</td>
+            <td>5,076,721</td>
+            <td>13.4%</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>joyourbaby/佳韵宝</td>
+            <td>6,766</td>
+            <td>1,508,933</td>
+            <td>4.0%</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>诺爱</td>
+            <td>4,231</td>
+            <td>890,412</td>
+            <td>2.4%</td>
+        </tr>
+    </table>
+
+    <h2>消费者行为洞察</h2>
+
+    <div class="chart-container">
+        <h3>消费者属性偏好</h3>
+        <div id="prefChart" class="chart"></div>
+    </div>
+
+    <table>
+        <tr>
+            <th>维度</th>
+            <th>消费者偏好</th>
+            <th>数据支撑</th>
+        </tr>
+        <tr>
+            <td>价格带</td>
+            <td><strong>50元以下</strong>销量最高</td>
+            <td>平均销量92件，是200元以上产品的36倍</td>
+        </tr>
+        <tr>
+            <td>颜色</td>
+            <td><strong>天蓝色</strong>最受欢迎</td>
+            <td>成交338万+，其次桔色、浅绿色</td>
+        </tr>
+        <tr>
+            <td>功能</td>
+            <td><strong>护腰、侧睡、托腹</strong>三大核心</td>
+            <td>护腰2193次、侧睡2148次、托腹1610次</td>
+        </tr>
+        <tr>
+            <td>必选属性</td>
+            <td><strong>可拆洗</strong></td>
+            <td>96.2%消费者选择可拆洗产品</td>
+        </tr>
+        <tr>
+            <td>评分</td>
+            <td><strong>DSR≥4.85</strong>转化更高</td>
+            <td>爆款DSR均分4.85+，高于行业均值4.65</td>
+        </tr>
+    </table>
+
+    <h2>增长机会与建议</h2>
+
+    <div class="chart-container">
+        <h3>品类增长潜力分析</h3>
+        <div id="growthChart" class="chart"></div>
+    </div>
+
+    <div class="recommendations">
+        <h3>可执行建议</h3>
+        <ul>
+            <li><strong>优先布局高增长品类</strong>：湿巾(+83.6%)、吸奶器(+63.6%)、产妇卫生巾(+61.6%)</li>
+            <li><strong>产品定价策略</strong>：主推50-150元价格带，避开200元以上高价区</li>
+            <li><strong>功能设计</strong>：U型枕+侧睡托腹+护腰多功能合一，可拆洗为标配</li>
+            <li><strong>颜色选择</strong>：天蓝色、浅绿色、粉色系为主打色</li>
+            <li><strong>蓝海机会</strong>：收腹带/盆骨矫正带竞争较小，护腰枕非均码存在差异化空间</li>
+            <li><strong>DSR优化</strong>：重点提升描述相符评分到4.85以上，可显著提升转化</li>
+        </ul>
+    </div>
+
+    <footer>
+        <p>数据来源：天猫电商平台搜索数据 | 报告生成时间：2026年3月</p>
+    </footer>
+
+    <script>
+        const chartTheme = {
+            backgroundColor: 'transparent',
+            textStyle: { color: '#9aa0a6' },
+            title: { textStyle: { color: '#e8eaed' } }
+        };
+
+        // 趋势图
+        const trendChart = echarts.init(document.getElementById('trendChart'));
+        trendChart.setOption({
+            ...chartTheme,
+            tooltip: {
+                trigger: 'axis',
+                backgroundColor: 'rgba(19,26,43,0.9)',
+                borderColor: '#00d4ff',
+                textStyle: { color: '#e8eaed' }
+            },
+            legend: {
+                data: ['妈妈产前产后用品', '孕妇装'],
+                textStyle: { color: '#9aa0a6' }
+            },
+            xAxis: {
+                type: 'category',
+                data: ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'],
+                axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } },
+                axisLabel: { color: '#9aa0a6' }
+            },
+            yAxis: {
+                type: 'value',
+                name: '搜索人气（万）',
+                axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } },
+                splitLine: { lineStyle: { color: 'rgba(255,255,255,0.05)' } }
+            },
+            series: [
+                {
+                    name: '妈妈产前产后用品',
+                    type: 'line',
+                    data: [180, 120, 210, 250, 280, 336, 290, 320, 270, 310, 280, 330],
+                    smooth: true,
+                    lineStyle: { color: '#00d4ff', width: 3 },
+                    itemStyle: { color: '#00d4ff' },
+                    areaStyle: {
+                        color: {
+                            type: 'linear',
+                            x: 0, y: 0, x2: 0, y2: 1,
+                            colorStops: [
+                                { offset: 0, color: 'rgba(0,212,255,0.3)' },
+                                { offset: 1, color: 'rgba(0,212,255,0)' }
+                            ]
+                        }
+                    }
+                },
+                {
+                    name: '孕妇装',
+                    type: 'line',
+                    data: [950, 680, 1100, 1250, 1400, 1380, 1200, 1350, 1280, 1670, 1450, 1520],
+                    smooth: true,
+                    lineStyle: { color: '#a855f7', width: 3 },
+                    itemStyle: { color: '#a855f7' },
+                    areaStyle: {
+                        color: {
+                            type: 'linear',
+                            x: 0, y: 0, x2: 0, y2: 1,
+                            colorStops: [
+                                { offset: 0, color: 'rgba(168,85,247,0.3)' },
+                                { offset: 1, color: 'rgba(168,85,247,0)' }
+                            ]
+                        }
+                    }
+                }
+            ]
+        });
+
+        // 品牌图
+        const brandChart = echarts.init(document.getElementById('brandChart'));
+        brandChart.setOption({
+            ...chartTheme,
+            tooltip: {
+                trigger: 'item',
+                backgroundColor: 'rgba(19,26,43,0.9)',
+                borderColor: '#00d4ff',
+                textStyle: { color: '#e8eaed' },
+                formatter: '{b}: {c}%'
+            },
+            series: [{
+                type: 'pie',
+                radius: ['40%', '70%'],
+                center: ['50%', '50%'],
+                data: [
+                    { value: 14.1, name: '多米贝贝' },
+                    { value: 13.4, name: '咕呗' },
+                    { value: 4.0, name: '佳韵宝' },
+                    { value: 2.4, name: '诺爱' },
+                    { value: 66.1, name: '其他' }
+                ],
+                label: {
+                    formatter: '{b}\n{c}%',
+                    color: '#9aa0a6',
+                    fontSize: 12
+                },
+                itemStyle: {
+                    borderRadius: 8,
+                    borderColor: '#131a2b',
+                    borderWidth: 2
+                }
+            }]
+        });
+
+        // 偏好图
+        const prefChart = echarts.init(document.getElementById('prefChart'));
+        prefChart.setOption({
+            ...chartTheme,
+            tooltip: {
+                trigger: 'axis',
+                backgroundColor: 'rgba(19,26,43,0.9)',
+                borderColor: '#00d4ff',
+                textStyle: { color: '#e8eaed' }
+            },
+            xAxis: {
+                type: 'category',
+                data: ['价格<50元', '50-100元', '100-150元', '150-200元', '>200元'],
+                axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } },
+                axisLabel: { color: '#9aa0a6' }
+            },
+            yAxis: {
+                type: 'value',
+                name: '平均销量（件）',
+                axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } },
+                splitLine: { lineStyle: { color: 'rgba(255,255,255,0.05)' } }
+            },
+            series: [{
+                type: 'bar',
+                data: [92, 58, 47, 23, 2.5],
+                itemStyle: {
+                    borderRadius: [8, 8, 0, 0],
+                    color: {
+                        type: 'linear',
+                        x: 0, y: 0, x2: 0, y2: 1,
+                        colorStops: [
+                            { offset: 0, color: '#00d4ff' },
+                            { offset: 1, color: '#00ffa3' }
+                        ]
+                    }
+                },
+                barWidth: '50%'
+            }]
+        });
+
+        // 增长图
+        const growthChart = echarts.init(document.getElementById('growthChart'));
+        growthChart.setOption({
+            ...chartTheme,
+            tooltip: {
+                trigger: 'axis',
+                backgroundColor: 'rgba(19,26,43,0.9)',
+                borderColor: '#a855f7',
+                textStyle: { color: '#e8eaed' }
+            },
+            xAxis: {
+                type: 'category',
+                data: ['湿巾', '吸奶器', '产妇卫生巾', '防溢乳垫', '一次性内裤', '看护垫'],
+                axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } },
+                axisLabel: { color: '#9aa0a6' }
+            },
+            yAxis: {
+                type: 'value',
+                name: '同比增长率（%）',
+                axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } },
+                splitLine: { lineStyle: { color: 'rgba(255,255,255,0.05)' } }
+            },
+            series: [{
+                type: 'bar',
+                data: [83.6, 63.6, 61.6, 35.2, 28.4, 24.1],
+                itemStyle: {
+                    borderRadius: [8, 8, 0, 0],
+                    color: {
+                        type: 'linear',
+                        x: 0, y: 0, x2: 0, y2: 1,
+                        colorStops: [
+                            { offset: 0, color: '#ff3cac' },
+                            { offset: 1, color: '#a855f7' }
+                        ]
+                    }
+                },
+                barWidth: '50%'
+            }]
+        });
+
+        window.addEventListener('resize', function() {
+            trendChart.resize();
+            brandChart.resize();
+            prefChart.resize();
+            growthChart.resize();
+        });
+    </script>
+</body>
+</html>
